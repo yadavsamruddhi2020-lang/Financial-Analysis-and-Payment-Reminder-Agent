@@ -1,0 +1,635 @@
+{
+  "name": "AI Business Loss Detector v3",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "ddfd9307-4f07-4a32-b796-bc343977b1df",
+      "name": "Telegram Trigger2",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        1664
+      ],
+      "webhookId": "3fe50137-edc3-46d6-9c99-108e39e53c3c",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "22222222-2222-4222-8222-222222222222",
+              "leftValue": "={{ $json.message.document }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9ff5e928-445b-4ca7-9390-664e5cdc19a1",
+      "name": "Has Document?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "text": "Please upload a CSV file to analyze.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "c87f902e-17b9-49bd-8397-cb70ec288bfe",
+      "name": "Please Upload CSV2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        1888
+      ],
+      "webhookId": "9e889d86-9b9c-4d25-93e6-e5d78bd77b64",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger2').item.json.message.document.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "4eefb8f2-fbdf-4c1a-9304-6b8d6d83b9fe",
+      "name": "Telegram Get File2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        1664
+      ],
+      "webhookId": "ee08a6b3-5f14-4a5a-ba08-a7a25604e064",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/analyze",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger2').item.json.message.chat.id }}"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('Telegram Trigger2').item.json.message.document.file_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d164d5d8-7e38-43ff-b7a5-50e7ad6b721d",
+      "name": "Analyze File2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        1664
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "text": "={{ $json.error ? $json.error.message || 'Invalid file. Please upload a CSV with the expected columns.' : 'Invalid file. Please upload a CSV with the expected columns.' }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "585532db-5281-4a7d-b3dd-51d8e9d1edeb",
+      "name": "Invalid File2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2256,
+        1888
+      ],
+      "webhookId": "bd9d8e4c-67fb-4261-9c92-bdf4652f9351",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "text": "={{ $json.report }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "2075581d-76e2-45e2-82a2-2aad13bce327",
+      "name": "Send Report2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2256,
+        1664
+      ],
+      "webhookId": "88fa3613-9cba-47f6-bf37-1d71b5689a71",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bbbbbbbb-1111-4111-8111-bbbbbbbbbbbb",
+              "leftValue": "={{ $('Analyze File2').item.json.reminders.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4eed1808-e441-4ce1-befa-0c3c9fdcaf9a",
+      "name": "Has Reminder?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "text": "✅ Analysis complete. No overdue invoices to follow up on.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "b9aef788-9278-4683-adb6-aa3dd9a333e1",
+      "name": "No Reminder Needed1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2736,
+        1888
+      ],
+      "webhookId": "0a4903f6-9586-4f2c-9a28-b6b3cd18bb3f",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "message": "Send payment reminder emails to overdue customers?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c202c57d-ef72-4d32-9ca7-9025aa7934e5",
+      "name": "Send and Wait for Response2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2736,
+        1520
+      ],
+      "webhookId": "f2ac596d-0359-4308-9d9d-a99776840e5a",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "Approve",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fc050040-6f62-48dd-9ece-ddd8b87c1118",
+      "name": "Approved?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2976,
+        1520
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger2').item.json.message.chat.id }}",
+        "text": "Draft discarded. No reminders sent.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "2617593f-d89f-40f3-a1fa-92e737f7e51c",
+      "name": "Draft Discarded2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3216,
+        1744
+      ],
+      "webhookId": "39d09ee6-aa98-46b6-8adb-67faa7d019d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split the reminders array into individual items for processing.\nconst analyzeData = $('Analyze File2').item.json;\nconst reminders = analyzeData.reminders || [];\nconst skipped = analyzeData.reminders_skipped || [];\nconst chatId = String($('Telegram Trigger2').item.json.message.chat.id);\n\nreturn reminders.map(r => ({\n  json: {\n    invoice_id: r.invoice_id,\n    customer: r.customer,\n    email: r.email,\n    amount: r.amount,\n    due_date: r.due_date,\n    message: r.message,\n    sendable: r.sendable,\n    chat_id: chatId\n  }\n}));\n"
+      },
+      "id": "83d639d0-1eff-4b80-84c0-2ebee1ad0f61",
+      "name": "Split Reminders1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f1111111-1111-4111-8111-fffffffffff1",
+              "leftValue": "={{ $json.sendable }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9ee8cf30-cc24-4238-a30d-5a1f3a1d42f9",
+      "name": "Is Sendable?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ \"xyz2020@gmail.com\" }}",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Payment reminder: invoice {{ $json.invoice_id }}",
+        "html": "=Hi {{ $json.customer }},\n\nThis is a friendly reminder that invoice **{{ $json.invoice_id }}** for **₹{{ $json.amount }}** is currently overdue.\n\nPlease arrange the payment at your earliest convenience. If you have already made the payment, kindly disregard this reminder.\n\nThank you for your business.\n\nBest regards,  \nAccounts Team",
+        "options": {}
+      },
+      "id": "3f62b62a-0ba0-411d-9660-3fdaa8c24fbe",
+      "name": "Send Email1",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3696,
+        1296
+      ],
+      "webhookId": "0e3ccec5-e7f5-449c-8d81-43e94c8db2aa",
+      "credentials": {
+        "smtp": {
+          "id": "PVxP2UFSwf7rZDtv",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a single summary from all reminder items.\n// Sent items come from Send Email; skipped items come from Is Sendable? false branch.\nconst analyzeData = $('Analyze File2').item.json;\nconst reminders = analyzeData.reminders || [];\nconst skipped = analyzeData.reminders_skipped || [];\nconst chatId = String($('Telegram Trigger2').item.json.message.chat.id);\n\nconst sendable = reminders.filter(r => r.sendable);\nconst notSendable = reminders.filter(r => !r.sendable);\n\nlet lines = [];\nlines.push('<b>📧 Email Reminder Summary</b>');\nlines.push('');\n\nif (sendable.length > 0) {\n  lines.push(`<b>✅ Sent (${sendable.length}):</b>`);\n  for (const r of sendable) {\n    lines.push(`• ${r.invoice_id} → ${r.customer} (${r.email})`);\n  }\n} else {\n  lines.push('No emails were sent.');\n}\n\nlines.push('');\n\nif (notSendable.length > 0) {\n  lines.push(`<b>⚠️ Skipped (${notSendable.length}):</b>`);\n  for (const r of notSendable) {\n    const reason = r.email ? 'invalid email' : 'no email on file';\n    lines.push(`• ${r.invoice_id} → ${r.customer} (${reason})`);\n  }\n}\n\nreturn [{\n  json: {\n    chat_id: chatId,\n    summary_text: lines.join('\\n')\n  }\n}];\n"
+      },
+      "id": "57cb0d6c-c497-4854-a2f8-db53fadd2f36",
+      "name": "Build Summary1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.summary_text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "244ccc7f-c35f-4ec6-be7d-ca6cbe434307",
+      "name": "Send Summary1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4176,
+        1424
+      ],
+      "webhookId": "3f1afed3-4a55-4ec5-8f0b-cfa62bd142b3",
+      "credentials": {
+        "telegramApi": {
+          "id": "W8jKOES44Oq5LWsJ",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Has Document?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Document?2": {
+      "main": [
+        [
+          {
+            "node": "Telegram Get File2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Please Upload CSV2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Get File2": {
+      "main": [
+        [
+          {
+            "node": "Analyze File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze File2": {
+      "main": [
+        [
+          {
+            "node": "Send Report2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Report2": {
+      "main": [
+        [
+          {
+            "node": "Has Reminder?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Reminder?1": {
+      "main": [
+        [
+          {
+            "node": "Send and Wait for Response2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Reminder Needed1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send and Wait for Response2": {
+      "main": [
+        [
+          {
+            "node": "Approved?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?2": {
+      "main": [
+        [
+          {
+            "node": "Split Reminders1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft Discarded2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Reminders1": {
+      "main": [
+        [
+          {
+            "node": "Is Sendable?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Sendable?1": {
+      "main": [
+        [
+          {
+            "node": "Send Email1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email1": {
+      "main": [
+        [
+          {
+            "node": "Build Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary1": {
+      "main": [
+        [
+          {
+            "node": "Send Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "0eacb6b6-e16e-4daf-a7f3-87f4f7a1d20d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5a941e7db0eeae6a772dd6a2402314e34928a400230e1fb39a2389108b44afca"
+  },
+  "nodeGroups": [],
+  "id": "wLTnackxorpnlGTf",
+  "tags": []
+}
